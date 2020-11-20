@@ -30,6 +30,9 @@ class LocAgent:
 
         # TODO PUT YOUR ADDITIONAL VARIABLES HERE
 
+        self.pits_list = []
+        self.breeze_list = []
+        self.visited_loc = []
 
         # ---------------------------------------
 
@@ -45,7 +48,26 @@ class LocAgent:
         
         # compute self.V and self.pi
         # TODO PUT YOUR CODE HERE
+        # print('self.V')
+        # print(np.shape(self.V))
+        # print(self.V)
+        # print('self.pi')
+        # print(np.shape(self.pi))
+        # print(self.pi)
+        # print('self.locations')
+        # print(self.locations)
+        # print("self.npits", self.npits)
+        dirs = ['N', 'E', 'S', 'W']
 
+        for i, pi in enumerate(self.pi):
+            self.pi[i] = random.choice(dirs)
+
+        # print('self.V')
+        # print(np.shape(self.V))
+        # print(self.V)
+        # print('self.pi')
+        # print(np.shape(self.pi))
+        # print(self.pi)
 
         # -----------------------
 
@@ -53,6 +75,7 @@ class LocAgent:
 
     def get_policy(self):
         pi_dict = {loc: self.pi[i] for i, loc in enumerate(self.locations)}
+        # print(pi_dict)
         return pi_dict
 
     def __call__(self, percept, loc):
@@ -60,6 +83,19 @@ class LocAgent:
 
         # update the policy
         # TODO PUT YOUR CODE HERE
+        # print("TEST")
+        # print('percept: ', percept, ' loc: ', loc)
+
+        if 'pit' in percept and loc not in self.pits_list:
+            self.pits_list.append(loc)
+            print('self.pits_list', self.pits_list)
+        if 'breeze' in percept and loc not in self.breeze_list:
+            # print("TEST breeze")
+            self.breeze_list.append(loc)
+            print('self.breeze_list', self.breeze_list)
+
+        self.comp_value_and_policy()
+
 
 
         # -----------------------
