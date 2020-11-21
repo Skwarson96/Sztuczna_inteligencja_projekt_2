@@ -33,7 +33,7 @@ class LocAgent:
         self.breeze_list = []
         self.visited_loc = []
         self.dirs = ['N', 'E', 'S', 'W']
-        self.next_state = []
+        self.moves = []
         self.t = 0
         self.gamma = 0.9
         # ---------------------------------------
@@ -51,65 +51,82 @@ class LocAgent:
         # compute self.V and self.pi
         # TODO PUT YOUR CODE HERE
 
-
-        # dirs = ['N', 'E', 'S', 'W']
-        #
-        # for i, pi in enumerate(self.pi):
-        #     self.pi[i] = random.choice(dirs)
-
-
-
         converged = False
         while not converged:
-            prev_V = self.V.copy()
+            prev_V = np.copy(self.V)
             for state in self.locations:
                 best_V = -1000
                 best_action = 'N'
+                # print('state:', state)
                 for action in self.dirs:
                     curr_V = 0
                     if action == 'N':
-                        self.next_state = [(0, 1), (1, 0), (-1, 0)]
+                        self.moves = [(0, 1), (1, 0), (-1, 0)]
                     if action == 'E':
-                        self.next_state = [(1, 0), (0, 1), (0, -1)]
+                        self.moves = [(1, 0), (0, 1), (0, -1)]
                     if action == 'S':
-                        self.next_state = [(0, -1), (1, 0), (-1, 0)]
+                        self.moves = [(0, -1), (1, 0), (-1, 0)]
                     if action == 'W':
-                        self.next_state = [(-1, 0), (0, 1), (0, -1)]
-                    print('action:', action, 'next states:', self.next_state)
+                        self.moves = [(-1, 0), (0, 1), (0, -1)]
+                    # print('action:', action, 'possible moves', self.moves)
 
-                    for idx, move in enumerate(self.next_state):
+                    next_states = []
+                    for move in self.moves:
+                        # print(state[0] + move[0], state[1] + move[1])
+                        if (state[0] + move[0], state[1] + move[1]) in self.locations:
+                            next_states.append((state[0] + move[0], state[1] + move[1]))
+                        else:
+                            next_states.append(state)
+                    # print('next possible states: ', next_states)
+
+                    for idx, next_state in enumerate(next_states):
+                        # prawdopodobienstwo
                         prob = 0
                         if idx == 0:
                             prob = 0.9
                         else:
                             prob = 0.05
-                        # TODO
-                        # jezeli nastepny stan to bryza to trzeba dac kare
-                        # jezeli nastepny stan to dol to rzeba dac kare
 
-                        # next_loc = loc + move
-                        # if next_loc in self.pits_list:
-                        #     R = -100
-                        # if next_loc in self.breeze_list:
-                        #     R = -100
-
+                        # nagroda
                         R = 0
-                        V_move = prev_V
+                        # print('visited_loc', self.visited_loc)
+                        if next_state in self.visited_loc and state in self.visited_loc:
+                            R = -10.0
+                        else:
+                            R = 10.0
+                        if next_state in self.breeze_list:
+                            R = -100.0
+                        if next_state in self.pits_list:
+                            R = -10000.0
 
-                        # curr_V += prob * (R * gamma ** iter * )
+                        # print('next state idx', self.loc_to_idx[next_state])
+                        next_state_index = self.loc_to_idx[next_state]
+                        V_next_state = prev_V[next_state_index]
+
+                        curr_V += prob * (R + gamma ** iter * V_next_state)
+
+                        # print('prob:', prob, ', R:', R, ', gamma ** iter:', gamma ** iter, ' ,V_next_state:', V_next_state, 'curr_v:', curr_V)
                     if curr_V > best_V:
                         best_V = curr_V
                         best_action = action
 
-            # self.V[] = best_V
-            # self.pi[] = best_action
+                state_index = self.loc_to_idx[state]
+                self.V[state_index] = best_V
+                self.pi[state_index] = best_action
 
             for idx, st in enumerate(self.V):
-                if abs(prev_V[idx] - st) < eps_V:
-                    converged = True
-                else:
+                # print(idx, prev_V[idx],  st)
+                if abs(prev_V[idx] - st) > eps_V:
                     converged = False
                     break
+                else:
+                    converged = True
+            # for i in range(0, len(self.V)):
+            #     if abs(prev_V[i] - self.V[i]) > eps_V:
+            #         converged = False
+            #         break
+            #     converged = True
+
             iter += 1
 
 
@@ -127,34 +144,36 @@ class LocAgent:
 
 
     def get_policy(self):
-       pi_dict = {loc: self.pi[i] for i, loc in enumerate(self.locations)}
-       # print(pi_dict)
-       return pi_dict
+        pi_dict = {loc: self.pi[i] for i, loc in enumerate(self.locations)}
+        # print(pi_dict)
+        return pi_dict
 
     def __call__(self, percept, loc):
-       self.loc = loc
+        self.loc = loc
 
-       # update the policy
-       # TODO PUT YOUR CODE HERE
+        # update the policy
+        # TODO PUT YOUR CODE HERE
 
-       if 'pit' in percept and loc not in self.pits_list:
-           self.pits_list.append(loc)
-           print('self.pits_list', self.pits_list)
-       if 'breeze' in percept and loc not in self.breeze_list:
-           # print("TEST breeze")
-           self.breeze_list.append(loc)
-           print('self.breeze_list', self.breeze_list)
+        if loc not in self.visited_loc:
+            self.visited_loc.append(loc)
 
-       self.comp_value_and_policy()
+        if 'pit' in percept and loc not in self.pits_list:
+            self.pits_list.append(loc)
+            print('self.pits_list', self.pits_list)
 
+        if 'breeze' in percept and loc not in self.breeze_list:
+            # print("TEST breeze")
+            self.breeze_list.append(loc)
+            print('self.breeze_list', self.breeze_list)
 
+        self.comp_value_and_policy()
 
        # -----------------------
 
-       # choose action according to policy
-       action = self.pi[self.loc_to_idx[self.loc]]
+        # choose action according to policy
+        action = self.pi[self.loc_to_idx[self.loc]]
 
-       return action
+        return action
 
     def forward(self, cur_loc, cur_dir):
        if cur_dir == 'N':
