@@ -32,10 +32,13 @@ class LocAgent:
         self.pits_list = []
         self.breeze_list = []
         self.visited_loc = []
+        self.visited_loc.append(loc)
         self.dirs = ['N', 'E', 'S', 'W']
         self.moves = []
         self.t = 0
         self.gamma = 0.9
+        self.prev_state = loc
+        self.percept = []
         # ---------------------------------------
 
         self.comp_value_and_policy()
@@ -50,6 +53,15 @@ class LocAgent:
         pass
         # compute self.V and self.pi
         # TODO PUT YOUR CODE HERE
+
+        if self.prev_action == 'N':
+            oposite_action = 'S'
+        if self.prev_action == 'E':
+            oposite_action = 'W'
+        if self.prev_action == 'S':
+            oposite_action = 'N'
+        if self.prev_action == 'W':
+            oposite_action = 'E'
 
         converged = False
         while not converged:
@@ -89,15 +101,19 @@ class LocAgent:
 
                         # nagroda
                         R = 0
-                        # print('visited_loc', self.visited_loc)
                         if next_state in self.visited_loc and state in self.visited_loc:
                             R = -10.0
                         else:
                             R = 10.0
                         if next_state in self.breeze_list:
-                            R = -100.0
+                            R = -50.0
                         if next_state in self.pits_list:
                             R = -10000.0
+
+                        # TODO
+                        # nagroda za cofniecie sie na poprzednie pole po wykryciu breeze
+                        # if 'breeze' in self.percept and action == oposite_action:
+                        #     R = 15
 
                         # print('next state idx', self.loc_to_idx[next_state])
                         next_state_index = self.loc_to_idx[next_state]
@@ -113,6 +129,7 @@ class LocAgent:
                 state_index = self.loc_to_idx[state]
                 self.V[state_index] = best_V
                 self.pi[state_index] = best_action
+                self.prev_action = best_action
 
             for idx, st in enumerate(self.V):
                 # print(idx, prev_V[idx],  st)
@@ -121,11 +138,6 @@ class LocAgent:
                     break
                 else:
                     converged = True
-            # for i in range(0, len(self.V)):
-            #     if abs(prev_V[i] - self.V[i]) > eps_V:
-            #         converged = False
-            #         break
-            #     converged = True
 
             iter += 1
 
@@ -154,8 +166,13 @@ class LocAgent:
         # update the policy
         # TODO PUT YOUR CODE HERE
 
-        if loc not in self.visited_loc:
-            self.visited_loc.append(loc)
+
+        self.percept = percept
+        # if loc not in self.visited_loc:
+        self.visited_loc.append(loc)
+
+        self.prev_state = self.visited_loc[-2]
+        # print('prev_state', self.prev_state)
 
         if 'pit' in percept and loc not in self.pits_list:
             self.pits_list.append(loc)
@@ -166,7 +183,14 @@ class LocAgent:
             self.breeze_list.append(loc)
             print('self.breeze_list', self.breeze_list)
 
+        if 'bump' in percept:
+            print('self.prev_action', self.prev_action)
+
+
+
         self.comp_value_and_policy()
+
+
 
        # -----------------------
 
