@@ -44,8 +44,11 @@ class LocAgent:
         self.comp_value_and_policy()
 
     def comp_value_and_policy(self):
-        reward_gold = 10
-        reward_pits = -100
+        reward_unknwn_state = 1
+        reward_pits = -10
+        reward_return_to_the_visited_state = -1
+        reward_breeze = -25
+
         gamma = 0.9
         eps_V = 1e-6
 
@@ -102,18 +105,31 @@ class LocAgent:
                         # nagroda
                         R = 0
                         if next_state in self.visited_loc and state in self.visited_loc:
-                            R = -10.0
+                            R = reward_return_to_the_visited_state
+                            # print('reward_return_to_the_visited_field=', reward_return_to_the_visited_field)
                         else:
-                            R = 10.0
-                        if next_state in self.breeze_list:
-                            R = -50.0
+                            R = reward_unknwn_state
+                            # print('reward_unknwn_state=', reward_unknwn_state)
+                        # if next_state in self.breeze_list:
+                        #     R = reward_breeze
+                        #     # print('reward_breeze=', reward_breeze)
                         if next_state in self.pits_list:
-                            R = -10000.0
+                            R = reward_pits
+                            # print('reward_pits=', reward_pits)
 
-                        # TODO
-                        # nagroda za cofniecie sie na poprzednie pole po wykryciu breeze
+                        '''
+                        # Narazie pomysl zawieszony
+                        # TODO nagroda za cofniecie sie na poprzednie pole po wykryciu breeze
                         # if 'breeze' in self.percept and action == oposite_action:
                         #     R = 15
+                        '''
+
+                        # TODO w momencie wykrycia breeze, obliczac na krorym miejscu moze byc pit
+                        # i dawac kary za wejscie na ktores z tych pol
+                        # te obliczone pola trzeba sprawdzac z polami juz odwiedzonymi
+                        #
+                        # jezeli wpadnie w dol to trzeba czyscic liste bryz z bryz od tego dolu
+
 
                         # print('next state idx', self.loc_to_idx[next_state])
                         next_state_index = self.loc_to_idx[next_state]
@@ -143,12 +159,42 @@ class LocAgent:
 
 
         # print('self.V')
-        # print(np.shape(self.V))
         # print(self.V)
         # print('self.pi')
-        # print(np.shape(self.pi))
         # print(self.pi)
 
+
+        # wyswietlanie 
+        # for idx in range(len(self.V)):
+        #     print(self.locations[idx] , self.V[idx])
+        print('pits_list', self.pits_list)
+        print('breeze_list', self.breeze_list)
+        first_row = []
+        second_row = []
+        third_row = []
+        fourth_row = []
+        for idx, (x, y) in enumerate(self.locations):
+
+            if y == 6:
+                first_row.append( ((x, y), self.V[idx]) )
+            if y == 7:
+                second_row.append( ((x,y), self.V[idx]) )
+            if y == 8:
+                third_row.append( ((x,y), self.V[idx]) )
+            if y == 9:
+                fourth_row.append( ((x,y), self.V[idx]) )
+
+
+        fourth_row = sorted(fourth_row)
+        third_row = sorted(third_row)
+        second_row = sorted(second_row)
+        first_row = sorted(first_row)
+
+        print(fourth_row)
+        print(third_row)
+        print(second_row)
+        print(first_row)
+        # print(sorted(self.locations))
         # -----------------------
 
         print('Policy found after ', iter, ' iterations')
