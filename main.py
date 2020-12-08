@@ -14,11 +14,12 @@ import agents
 class LocWorldEnv:
     actions = "turnleft turnright forward".split()
 
-    def __init__(self, size, walls, gold, pits, eps_perc, eps_move, start_loc):
+    def __init__(self, size, walls, gold, pits, eps_perc, eps_move, start_loc, loc_list):
         self.size = size
         self.walls = walls
         self.gold = gold
         self.pits = pits
+        self.loc_list = loc_list
         self.action_sensors = []
         self.locations = {*locations(self.size)}.difference(self.walls)
         self.eps_perc = eps_perc
@@ -124,6 +125,7 @@ class LocView:
 
         self.update(state)
 
+        self.policy_arrows = []
     def setAgent(self, name):
         self.agentName.setText(name)
 
@@ -142,6 +144,8 @@ class LocView:
                 cell.setFill("yellow")
             elif loc in state.pits:
                 cell.setFill("gray")
+            elif loc in state.loc_list:
+                cell.setFill("red")
             else:
                 if P is None:
                     cell.setFill("white")
@@ -155,9 +159,12 @@ class LocView:
             self.agt = self.drawArrow(state.agentLoc, state.agentDir, 10, self.color)
 
         if pi:
+            for a in self.policy_arrows:
+                a.undraw()
+            self.policy_arrows = []
             for loc, cell in self.cells.items():
                 if loc in pi:
-                    self.drawArrow(loc, pi[loc], 3, 'green')
+                    self.policy_arrows.append(self.drawArrow(loc, pi[loc], 3, 'green'))
 
     def drawArrow(self, loc, heading, width, color):
         x, y = loc
@@ -195,22 +202,24 @@ def main():
     env_size = 16
     # map can be different during test
     # map of the environment: 1 - wall, 0 - free
-    map = np.array([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
+    map = np.array([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # 15
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # 14
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # 13
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # 12
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # 11
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # 10
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # 9
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # 8
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # 7
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # 6
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # 5
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # 4
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # 3
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # 2
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # 1
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]) # 0
+                #    0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+                #     start_loc = (0, 6)
     # build the list of walls locations
     walls = []
     for i in range(map.shape[0]):
@@ -219,13 +228,18 @@ def main():
                 walls.append((j, env_size - i - 1))
 
     ngames = 10
-    step_lim = 20
+    step_lim = 80
     # number of pits can be different during test
-    npits = 3
+    npits = 5
+    # npits = 3 final game points =  -13.5
     # starting location can be different during test
     start_loc = (0, 6)
     all_points = 0
+
+
     for g in range(ngames):
+        loc_list = []
+        loc_list.append(start_loc)
         game_points = 0
 
         locs = list({*locations(env_size)}.difference(walls).difference([start_loc]))
@@ -238,24 +252,26 @@ def main():
         pits = locs_ch[1:]
 
         # create the environment and viewer
-        env = LocWorldEnv(env_size, walls, gold, pits, eps_perc, eps_move, start_loc)
+        env = LocWorldEnv(env_size, walls, gold, pits, eps_perc, eps_move, start_loc, loc_list)
         view = LocView(env)
 
         # create the agent
         agent = agents.prob.LocAgent(env.size, env.walls, eps_move, npits, start_loc)
         t = 0
         while not env.finished and t < step_lim:
-            print('step %d' % t)
+            print('\n\nstep %d' % t)
 
             percept = env.getPercept()
             # agent has to know its location, so pass it as argument
+            # pobranie akcji do wykonania
             action = agent(percept, env.agentLoc)
-
+            loc_list.append(env.agentLoc)
             print('\nPercept: ', percept)
             print('Action ', action)
             print('Location ', env.agentLoc)
             print('current game points = ', game_points)
 
+            # wyswietlanie
             pi = agent.get_policy()
             view.update(env, pi=pi)
             update(rate)
