@@ -41,6 +41,7 @@ class LocAgent:
         self.percept = []
         self.prob_pits_list = []
         self.real_prev_action = None
+        self.bump_counter = 0
         # ---------------------------------------
 
         self.comp_value_and_policy()
@@ -59,18 +60,6 @@ class LocAgent:
         # compute self.V and self.pi
         # TODO PUT YOUR CODE HERE
 
-        # TODO wykoszystanie 'bump' w momencie gdy utknie i bedzie uderzal w sciane ta sama akcja
-        # bedzie wtedy trzeba dac nagrode dla dwoch pozostalych mozliwych pol
-
-
-        # if self.prev_action == 'N':
-        #     oposite_action = 'S'
-        # if self.prev_action == 'E':
-        #     oposite_action = 'W'
-        # if self.prev_action == 'S':
-        #     oposite_action = 'N'
-        # if self.prev_action == 'W':
-        #     oposite_action = 'E'
 
         converged = False
         while not converged:
@@ -114,15 +103,15 @@ class LocAgent:
                         # nagroda
                         R = 0
                         if (next_state not in self.visited_loc) and (next_state not in self.prob_pits_list):
-                            R = 10
+                            R = 100
                         else:
-                            R = -1
-
-                        if next_state in self.prob_pits_list:
                             R = -10
 
-                        if next_state in self.pits_list:
+                        if next_state in self.prob_pits_list:
                             R = -100
+
+                        if next_state in self.pits_list:
+                            R = -10000
 
                         # if next_state == (15, 9):
                         #     R = 100
@@ -210,8 +199,8 @@ class LocAgent:
         self.prev_state = self.visited_loc[-2]
         # print('prev_state', self.prev_state)
 
-        # obliczenie poprzedniej akcji na podstawie zmiany wspolrzednych 
-        self.real_prev_action = None
+        # obliczenie poprzedniej akcji na podstawie zmiany wspolrzednych
+        self.real_prev_action = 'S'
         # N (0, 1)
         # S (0, -1)
         # E (1, 0)
@@ -269,9 +258,32 @@ class LocAgent:
                 set_prob_pits.add(prob_pit)
 
 
+        oposite_action = 'S'
+        if self.prev_action == 'N':
+            oposite_action = 'S'
+        if self.prev_action == 'E':
+            oposite_action = 'W'
+        if self.prev_action == 'S':
+            oposite_action = 'N'
+        if self.prev_action == 'W':
+            oposite_action = 'E'
+
+        if 'bump' in self.percept:
+            self.bump_counter += 1
+        else:
+            self.bump_counter = 0
+        # jezeli bedzie 5 razy bump to zostanie wymuszona przeciwna akcja
+        if self.bump_counter == 5:
+            action = oposite_action
+            return action
+
+
+        # TODO jezeli nie ma bryzy to okoliczne lokacje sa bezieczne
+        # mozna zrobic liste z tymi lokacjami i jakos ja uwzgledniac
+
 
         self.comp_value_and_policy()
-        self.prev_action = self.pi[self.loc_to_idx[self.loc]]
+
        # -----------------------
 
         # choose action according to policy
