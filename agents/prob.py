@@ -40,6 +40,7 @@ class LocAgent:
         self.prev_state = loc
         self.percept = []
         self.prob_pits_list = []
+        self.real_prev_action = None
         # ---------------------------------------
 
         self.comp_value_and_policy()
@@ -58,14 +59,18 @@ class LocAgent:
         # compute self.V and self.pi
         # TODO PUT YOUR CODE HERE
 
-        if self.prev_action == 'N':
-            oposite_action = 'S'
-        if self.prev_action == 'E':
-            oposite_action = 'W'
-        if self.prev_action == 'S':
-            oposite_action = 'N'
-        if self.prev_action == 'W':
-            oposite_action = 'E'
+        # TODO wykoszystanie 'bump' w momencie gdy utknie i bedzie uderzal w sciane ta sama akcja
+        # bedzie wtedy trzeba dac nagrode dla dwoch pozostalych mozliwych pol
+
+
+        # if self.prev_action == 'N':
+        #     oposite_action = 'S'
+        # if self.prev_action == 'E':
+        #     oposite_action = 'W'
+        # if self.prev_action == 'S':
+        #     oposite_action = 'N'
+        # if self.prev_action == 'W':
+        #     oposite_action = 'E'
 
         converged = False
         while not converged:
@@ -141,7 +146,7 @@ class LocAgent:
                 state_index = self.loc_to_idx[state]
                 self.V[state_index] = best_V
                 self.pi[state_index] = best_action
-                self.prev_action = best_action
+                # self.prev_action = best_action
 
             for idx, st in enumerate(self.V):
                 # print(idx, prev_V[idx],  st)
@@ -200,22 +205,37 @@ class LocAgent:
 
         # update the policy
         # TODO PUT YOUR CODE HERE
-
         self.percept = percept
-        # if loc not in self.visited_loc:
         self.visited_loc.append(loc)
-
         self.prev_state = self.visited_loc[-2]
         # print('prev_state', self.prev_state)
+
+        # obliczenie poprzedniej akcji na podstawie zmiany wspolrzednych 
+        self.real_prev_action = None
+        # N (0, 1)
+        # S (0, -1)
+        # E (1, 0)
+        # W (-1, 0)
+        if (loc[0]- self.prev_state[0], loc[1] - self.prev_state[1]) == (0, 1):
+            self.real_prev_action = 'N'
+        if (loc[0]- self.prev_state[0], loc[1] - self.prev_state[1]) == (0, -1):
+            self.real_prev_action = 'S'
+        if (loc[0]- self.prev_state[0], loc[1] - self.prev_state[1]) == (1, 0):
+            self.real_prev_action = 'E'
+        if (loc[0]- self.prev_state[0], loc[1] - self.prev_state[1]) == (-1, 0):
+            self.real_prev_action = 'W'
+        self.prev_action = self.real_prev_action
+
+
 
         if 'pit' in percept and loc not in self.pits_list:
             self.pits_list.append(loc)
             # print('self.pits_list', self.pits_list)
 
 
-
+        print('self prev_action:', self.prev_action)
         # znajdywanie miejsc w któchych prawdopodobnie jest pit
-        if 'breeze' in percept and loc not in self.breeze_list and loc not in self.prob_pits_list:
+        if ('breeze' in percept) and (loc not in self.breeze_list): # and (loc not in self.prob_pits_list):
             self.breeze_list.append(loc)
             moves = []
 
@@ -230,6 +250,7 @@ class LocAgent:
 
             for move in moves:
                 if (loc[0] + move[0], loc[1] + move[1]) in self.locations:
+                    print('Prob pit:',(loc[0] + move[0], loc[1] + move[1]))
                     self.prob_pits_list.append((loc[0] + move[0], loc[1] + move[1]))
 
         # usuniecie lokalizacji jezeli zostala odwiedzona
@@ -248,8 +269,9 @@ class LocAgent:
                 set_prob_pits.add(prob_pit)
 
 
-        self.comp_value_and_policy()
 
+        self.comp_value_and_policy()
+        self.prev_action = self.pi[self.loc_to_idx[self.loc]]
        # -----------------------
 
         # choose action according to policy
