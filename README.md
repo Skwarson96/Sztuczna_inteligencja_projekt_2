@@ -8,3 +8,7 @@ Rzeczy dodane do call:
 
 Rzeczy dodane do funkcji self.comp_value_and_policy():
 * implementacja algorytmu value iteration z pseudokodu z zajęć.
+* funkcja do wygodniego wyswietlania planszy z wartosciami self.V ale każdego pola
+
+Rzeczy dodane do main.py
+* oznaczanie na czerwono lokacji odwiedzonych
