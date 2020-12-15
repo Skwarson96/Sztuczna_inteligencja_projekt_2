@@ -47,10 +47,6 @@ class LocAgent:
         self.comp_value_and_policy()
 
     def comp_value_and_policy(self):
-        reward_unknwn_state = 1
-        reward_pits = -100
-        reward_return_to_the_visited_state = -1
-        reward_breeze = -25
 
         # im większa gamma tym bardziej się liczą nagrody w przyszłości
         gamma = 0.9
@@ -113,9 +109,6 @@ class LocAgent:
                         if next_state in self.pits_list:
                             R = -10000
 
-                        # if next_state == (15, 9):
-                        #     R = 100
-
                         # print('next state idx', self.loc_to_idx[next_state])
                         reward += gamma ** iter * R
                         next_state_index = self.loc_to_idx[next_state]
@@ -147,12 +140,13 @@ class LocAgent:
 
             iter += 1
 
-        print('self.prob_pits_list', self.prob_pits_list)
-        print('pits_list', self.pits_list)
-        print('breeze_list', self.breeze_list)
-        print('visited_loc', self.visited_loc)
+        # print('self.prob_pits_list', self.prob_pits_list)
+        # print('pits_list', self.pits_list)
+        # print('breeze_list', self.breeze_list)
+        # print('visited_loc', self.visited_loc)
+        
         # wyswietlanie macierzy self.V razem z lokacjami
-        self.printing_matrix()
+        # self.printing_matrix()
         # -----------------------
 
         print('Policy found after ', iter, ' iterations')
