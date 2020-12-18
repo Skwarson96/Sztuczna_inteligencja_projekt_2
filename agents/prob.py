@@ -110,7 +110,7 @@ class LocAgent:
                             R = -10000
 
                         # print('next state idx', self.loc_to_idx[next_state])
-                        reward += gamma ** iter * R
+                        reward = gamma * R
                         next_state_index = self.loc_to_idx[next_state]
                         V_next_state = prev_V[next_state_index]
 
@@ -144,7 +144,7 @@ class LocAgent:
         # print('pits_list', self.pits_list)
         # print('breeze_list', self.breeze_list)
         # print('visited_loc', self.visited_loc)
-        
+
         # wyswietlanie macierzy self.V razem z lokacjami
         # self.printing_matrix()
         # -----------------------
