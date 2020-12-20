@@ -40,6 +40,7 @@ class LocAgent:
         self.prob_pits_list = []
         self.real_prev_action = None
         self.bump_counter = 0
+        self.test_prev_action = 'N'
         # ---------------------------------------
 
         self.comp_value_and_policy()
@@ -167,7 +168,6 @@ class LocAgent:
         self.percept = percept
         self.visited_loc.append(loc)
         self.prev_state = self.visited_loc[-2]
-
         # obliczenie poprzedniej akcji na podstawie zmiany wspolrzednych
         self.real_prev_action = 'S'
         # N (0, 1)
@@ -182,7 +182,11 @@ class LocAgent:
             self.real_prev_action = 'E'
         if (loc[0]- self.prev_state[0], loc[1] - self.prev_state[1]) == (-1, 0):
             self.real_prev_action = 'W'
-        self.prev_action = self.real_prev_action
+        # gdy agent nie ruszy sie z miejsca
+        if (loc[0]- self.prev_state[0], loc[1] - self.prev_state[1]) == (0, 0):
+            self.real_prev_action = self.prev_action
+
+        # self.prev_action = self.real_prev_action
 
 
         # po wejsciu do lokacji z dolem, doanie lokacji do listy
@@ -194,13 +198,13 @@ class LocAgent:
             self.breeze_list.append(loc)
             moves = []
 
-            if self.prev_action == 'N':
+            if self.real_prev_action == 'N':
                 moves = [(0, 1), (1, 0), (-1, 0)]
-            if self.prev_action == 'E':
+            if self.real_prev_action == 'E':
                 moves = [(1, 0), (0, 1), (0, -1)]
-            if self.prev_action == 'S':
+            if self.real_prev_action == 'S':
                 moves = [(0, -1), (1, 0), (-1, 0)]
-            if self.prev_action == 'W':
+            if self.real_prev_action == 'W':
                 moves = [(-1, 0), (0, 1), (0, -1)]
 
             for move in moves:
@@ -224,13 +228,13 @@ class LocAgent:
 
         # znalezienie akcji przeciwej do poprzedniej akcji
         oposite_action = 'S'
-        if self.prev_action == 'N':
+        if self.real_prev_action == 'N':
             oposite_action = 'S'
-        if self.prev_action == 'E':
+        if self.real_prev_action == 'E':
             oposite_action = 'W'
-        if self.prev_action == 'S':
+        if self.real_prev_action == 'S':
             oposite_action = 'N'
-        if self.prev_action == 'W':
+        if self.real_prev_action == 'W':
             oposite_action = 'E'
 
         if 'bump' in self.percept:
@@ -242,13 +246,13 @@ class LocAgent:
             action = oposite_action
             return action
 
-
         self.comp_value_and_policy()
 
        # -----------------------
 
         # choose action according to policy
         action = self.pi[self.loc_to_idx[self.loc]]
+        self.prev_action = action
 
         return action
 
