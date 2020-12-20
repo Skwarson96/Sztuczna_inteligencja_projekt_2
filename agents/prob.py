@@ -35,8 +35,6 @@ class LocAgent:
         self.visited_loc.append(loc)
         self.dirs = ['N', 'E', 'S', 'W']
         self.moves = []
-        self.t = 0
-        self.gamma = 0.9
         self.prev_state = loc
         self.percept = []
         self.prob_pits_list = []
@@ -47,8 +45,6 @@ class LocAgent:
         self.comp_value_and_policy()
 
     def comp_value_and_policy(self):
-
-        # im większa gamma tym bardziej się liczą nagrody w przyszłości
         gamma = 0.9
         eps_V = 1e-6
 
@@ -56,16 +52,13 @@ class LocAgent:
         # compute self.V and self.pi
         # TODO PUT YOUR CODE HERE
 
-
         converged = False
         while not converged:
             prev_V = np.copy(self.V)
             for state in self.locations:
-                # print('state:', state)
                 best_V = -1000
                 best_action = 'N'
                 for action in self.dirs:
-                    # print('action', action)
                     curr_V = 0
                     reward = 0
                     if action == 'N':
@@ -76,59 +69,48 @@ class LocAgent:
                         self.moves = [(0, -1), (1, 0), (-1, 0)]
                     if action == 'W':
                         self.moves = [(-1, 0), (0, 1), (0, -1)]
-                    # print('action:', action, 'possible moves', self.moves)
 
                     next_states = []
                     for move in self.moves:
-                        # print(state[0] + move[0], state[1] + move[1])
                         if (state[0] + move[0], state[1] + move[1]) in self.locations:
                             next_states.append((state[0] + move[0], state[1] + move[1]))
                         else:
                             next_states.append(state)
-                    # print('next possible states: ', next_states)
 
                     for idx, next_state in enumerate(next_states):
                         # prawdopodobienstwo
                         prob = 0
-
                         if idx == 0:
-                            prob = 0.9
+                            prob = 0.9 # prawdopodobienstwo wykonania zaplanowanej akcji
                         else:
-                            prob = 0.05
+                            prob = 0.05 # prawdopodobinstwo wykonania ruchu w bok ( nie zaplanoawna akcja)
 
                         # nagroda
                         R = 0
                         if (next_state not in self.visited_loc) and (next_state not in self.prob_pits_list):
-                            R = 100
+                            R = 100 # nagroda za odkrycie nowego pola
                         else:
-                            R = -10
+                            R = -10 # kara za wejście na odwiedzone juz pole
 
                         if next_state in self.prob_pits_list:
-                            R = -100
+                            R = -100 # kara za wejscie na pole na ktorym prawdopodobnie jest dol
 
                         if next_state in self.pits_list:
-                            R = -10000
+                            R = -10000 # kara za wejscie na pole ktore jest na liscie dolow
 
-                        # print('next state idx', self.loc_to_idx[next_state])
-                        reward = gamma * R
                         next_state_index = self.loc_to_idx[next_state]
                         V_next_state = prev_V[next_state_index]
 
+                        reward = gamma * R
                         curr_V += prob * (reward + gamma * V_next_state)
 
-                        # print('state:', state ,'next_states[idx]', next_states[idx], 'next_state', next_state)
-                        # print('prob:', prob, ', R:', R, ', gamma ** iter:', gamma ** iter, ' ,V_next_state:', V_next_state, 'curr_v:', curr_V)
                     if curr_V > best_V:
                         best_V = curr_V
                         best_action = action
 
-
-                # print('state:', state ,'best_action', best_action)
-
                 state_index = self.loc_to_idx[state]
                 self.V[state_index] = best_V
                 self.pi[state_index] = best_action
-                # self.prev_action = best_action
 
             for idx, st in enumerate(self.V):
                 # print(idx, prev_V[idx],  st)
@@ -139,11 +121,6 @@ class LocAgent:
                     converged = True
 
             iter += 1
-
-        # print('self.prob_pits_list', self.prob_pits_list)
-        # print('pits_list', self.pits_list)
-        # print('breeze_list', self.breeze_list)
-        # print('visited_loc', self.visited_loc)
 
         # wyswietlanie macierzy self.V razem z lokacjami
         # self.printing_matrix()
@@ -180,7 +157,6 @@ class LocAgent:
 
     def get_policy(self):
         pi_dict = {loc: self.pi[i] for i, loc in enumerate(self.locations)}
-        # print(pi_dict)
         return pi_dict
 
     def __call__(self, percept, loc):
@@ -191,7 +167,6 @@ class LocAgent:
         self.percept = percept
         self.visited_loc.append(loc)
         self.prev_state = self.visited_loc[-2]
-        # print('prev_state', self.prev_state)
 
         # obliczenie poprzedniej akcji na podstawie zmiany wspolrzednych
         self.real_prev_action = 'S'
@@ -210,13 +185,10 @@ class LocAgent:
         self.prev_action = self.real_prev_action
 
 
-
+        # po wejsciu do lokacji z dolem, doanie lokacji do listy
         if 'pit' in percept and loc not in self.pits_list:
             self.pits_list.append(loc)
-            # print('self.pits_list', self.pits_list)
 
-
-        print('self prev_action:', self.prev_action)
         # znajdywanie miejsc w któchych prawdopodobnie jest pit
         if ('breeze' in percept) and (loc not in self.breeze_list): # and (loc not in self.prob_pits_list):
             self.breeze_list.append(loc)
@@ -233,7 +205,6 @@ class LocAgent:
 
             for move in moves:
                 if (loc[0] + move[0], loc[1] + move[1]) in self.locations:
-                    print('Prob pit:',(loc[0] + move[0], loc[1] + move[1]))
                     self.prob_pits_list.append((loc[0] + move[0], loc[1] + move[1]))
 
         # usuniecie lokalizacji jezeli zostala odwiedzona
@@ -251,7 +222,7 @@ class LocAgent:
             else:
                 set_prob_pits.add(prob_pit)
 
-
+        # znalezienie akcji przeciwej do poprzedniej akcji
         oposite_action = 'S'
         if self.prev_action == 'N':
             oposite_action = 'S'
@@ -270,10 +241,6 @@ class LocAgent:
         if self.bump_counter == 5:
             action = oposite_action
             return action
-
-
-        # TODO jezeli nie ma bryzy to okoliczne lokacje sa bezieczne
-        # mozna zrobic liste z tymi lokacjami i jakos ja uwzgledniac
 
 
         self.comp_value_and_policy()
