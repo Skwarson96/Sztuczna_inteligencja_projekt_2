@@ -6,6 +6,10 @@ import numpy as np
 
 from gridutil import *
 
+# TODO Jakość kodu i raport (3/3)
+# TODO Wynik dla 3 dołów -33.50(1.0/1.5)
+# TODO Wynik dla 5 dołów -48.40 (0.5/1.5)
+# TODO Narzędzia do debugowania +1.
 
 class LocAgent:
     def __init__(self, size, walls, eps_move, npits, loc):
@@ -53,10 +57,12 @@ class LocAgent:
         # compute self.V and self.pi
         # TODO PUT YOUR CODE HERE
 
+        # TODO Value iteration (3.5/4)
         converged = False
         while not converged:
             prev_V = np.copy(self.V)
             for state in self.locations:
+                # TODO Obliczone V może być mniejsze od -1000 ze względu na dużą ujemną nagrodę za wejście do dołu.
                 best_V = -1000
                 best_action = 'N'
                 for action in self.dirs:
@@ -81,6 +87,7 @@ class LocAgent:
                     for idx, next_state in enumerate(next_states):
                         # prawdopodobienstwo
                         prob = 0
+                        # TODO Wartości wpisane na stałe.
                         if idx == 0:
                             prob = 0.9 # prawdopodobienstwo wykonania zaplanowanej akcji
                         else:
@@ -102,6 +109,7 @@ class LocAgent:
                         next_state_index = self.loc_to_idx[next_state]
                         V_next_state = prev_V[next_state_index]
 
+                        #TODO Tutaj powinno byc samo R.
                         reward = gamma * R
                         curr_V += prob * (reward + gamma * V_next_state)
 
