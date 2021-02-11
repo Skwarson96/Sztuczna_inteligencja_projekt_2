@@ -1,15 +1,6 @@
-# prob.py
-# This is
-
-import random
 import numpy as np
-
 from gridutil import *
 
-# TODO Jakość kodu i raport (3/3)
-# TODO Wynik dla 3 dołów -33.50(1.0/1.5)
-# TODO Wynik dla 5 dołów -48.40 (0.5/1.5)
-# TODO Narzędzia do debugowania +1.
 
 class LocAgent:
     def __init__(self, size, walls, eps_move, npits, loc):
@@ -45,6 +36,7 @@ class LocAgent:
         self.real_prev_action = None
         self.bump_counter = 0
         self.test_prev_action = 'N'
+        self.prob = 0.9
         # ---------------------------------------
 
         self.comp_value_and_policy()
@@ -57,13 +49,11 @@ class LocAgent:
         # compute self.V and self.pi
         # TODO PUT YOUR CODE HERE
 
-        # TODO Value iteration (3.5/4)
         converged = False
         while not converged:
             prev_V = np.copy(self.V)
             for state in self.locations:
-                # TODO Obliczone V może być mniejsze od -1000 ze względu na dużą ujemną nagrodę za wejście do dołu.
-                best_V = -1000
+                best_V = np.log(0) # - inf
                 best_action = 'N'
                 for action in self.dirs:
                     curr_V = 0
@@ -86,12 +76,10 @@ class LocAgent:
 
                     for idx, next_state in enumerate(next_states):
                         # prawdopodobienstwo
-                        prob = 0
-                        # TODO Wartości wpisane na stałe.
                         if idx == 0:
-                            prob = 0.9 # prawdopodobienstwo wykonania zaplanowanej akcji
+                            prob = self.prob # prawdopodobienstwo wykonania zaplanowanej akcji
                         else:
-                            prob = 0.05 # prawdopodobinstwo wykonania ruchu w bok ( nie zaplanoawna akcja)
+                            prob = (1-self.prob)/2 # prawdopodobinstwo wykonania ruchu w bok ( nie zaplanoawna akcja)
 
                         # nagroda
                         R = 0
@@ -109,9 +97,8 @@ class LocAgent:
                         next_state_index = self.loc_to_idx[next_state]
                         V_next_state = prev_V[next_state_index]
 
-                        #TODO Tutaj powinno byc samo R.
-                        reward = gamma * R
-                        curr_V += prob * (reward + gamma * V_next_state)
+
+                        curr_V += prob * (R + gamma * V_next_state)
 
                     if curr_V > best_V:
                         best_V = curr_V
@@ -193,9 +180,6 @@ class LocAgent:
         # gdy agent nie ruszy sie z miejsca
         if (loc[0]- self.prev_state[0], loc[1] - self.prev_state[1]) == (0, 0):
             self.real_prev_action = self.prev_action
-
-        # self.prev_action = self.real_prev_action
-
 
         # po wejsciu do lokacji z dolem, doanie lokacji do listy
         if 'pit' in percept and loc not in self.pits_list:
