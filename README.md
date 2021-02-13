@@ -1,4 +1,17 @@
-Rzeczy dodane do call:
+
+Zadanie polegało na obliczeniu optymalnej strategii dla problemu znajdywania lokacji ze złotem przy jednoczesnym unikaniu dołów. Agent nie zna położenia dołów ani złota. Strategia musi być modyfikowana na bieżąco, po każdym ruchu. Agent ma do dyspozycji sensor (zmienna percept) informującygo go sygnałem 'breeze' czy w pobliżu znajduje się dół. Gra się kończy w momencie odszuania złota lub po utracie trzech żyć.
+
+Wygląd mapy przy rozpoczęciu gry:
+
+
+
+Wygląd mapy po odszukaniu złota:
+
+
+(czerwonym kolorem oznaczone są lokacje odwiedzone)
+
+# Modyfikacje dodane do szablonu:
+-Rzeczy dodane do call:
 * obliczenie poprzedniej akcji na podstawie zmiany współrzędnych
 * dodawanie lokacji z dołami do dedykowanej listy
 * stworzenie listy z możliwymi lokacjami dołów. Lista jest tworzona na podstawie 'breeze' odczytanego z percept. Po wykryciu 'breeze' brane sa pod uwagę 3 lokacje w których może być dół ( 3 ponieważ z lokacją z 'breeze' sąsiadują 4 lokacje a z jedenj agent przyszedł więc nie mogło być tam dołu). Lokacje sa obliczane ze względu na ostatnią akcję. Lokacje są usuwane z tej listy w momencie gdy agent wejdzie na to pole lub gdy w liście pojawi się ta sama lokacja dwa razy, traktowana jest ona wtedy jako dół i dodana do listy lokacji z dołami. Nie będzie to prawda w każdym przypadku, czasami może się zdarzyć, że zwykła lokacja zostanie potraktowana jako dół, ale w znacznej większości sytuacji to założenie sprawdza się bardzo dobrze i pozwala na wykrywanie dołów bez wchodzenia do nich.
@@ -10,9 +23,9 @@ Rzeczy dodane do call:
   * kara za wejście na pole z listy prawdopodobnych dołów -> -100
   * kara za wejście na pole z listy dołów -> -10000
 
-Rzeczy dodane do funkcji self.comp_value_and_policy():
+-Rzeczy dodane do funkcji self.comp_value_and_policy():
 * implementacja algorytmu value iteration z pseudokodu z zajęć.
 * funkcja do wygodniego wyswietlania planszy z wartosciami self.V dla każdego pola
 
-Rzeczy dodane do main.py
+-Rzeczy dodane do main.py
 * oznaczanie na czerwono lokacji odwiedzonych
