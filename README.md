@@ -2,11 +2,13 @@
 Zadanie polegało na obliczeniu optymalnej strategii dla problemu znajdywania lokacji ze złotem przy jednoczesnym unikaniu dołów. Agent nie zna położenia dołów ani złota. Strategia musi być modyfikowana na bieżąco, po każdym ruchu. Agent ma do dyspozycji sensor (zmienna percept) informującygo go sygnałem 'breeze' czy w pobliżu znajduje się dół. Gra się kończy w momencie odszuania złota lub po utracie trzech żyć.
 
 Wygląd mapy przy rozpoczęciu gry:
-<img src="https://github.com/Skwarson96/Sztuczna_inteligencja_projekt_2/blob/master/images/img_start.png" width="350">
+
+<img src="https://github.com/Skwarson96/Sztuczna_inteligencja_projekt_2/blob/master/images/img_start.png" width="800">
 
 
 Wygląd mapy po odszukaniu złota:
-<img src="https://github.com/Skwarson96/Sztuczna_inteligencja_projekt_2/blob/master/images/img_end.png" width="350">
+
+<img src="https://github.com/Skwarson96/Sztuczna_inteligencja_projekt_2/blob/master/images/img_end.png" width="800">
 
 (czerwonym kolorem oznaczone są lokacje odwiedzone)
 
